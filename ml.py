@@ -1,107 +1,171 @@
-########
-#Imports
-########
-import argparse #Parser for command-line arguments.
+###########
+# Imports #
+###########
+import PySimpleGUI as gui
 import os
-from os import startfile #Allows for files to be opened in their default app.
-import numpy as np #Numpy, for math stuff. Used for random list selection here.
-import time #Allows for sleep.
+import numpy as np
+import time
 
-#######################
-#Command-Line Arguments
-#######################
-parser = argparse.ArgumentParser() #Initialize parser.
-parser.add_argument("path", action="store", help="Path to folder or index file.") #Argument for path to folder to be searched or index file to read/write.
-parser.add_argument("-s","--subdirectories", action="store_true", dest="s", default=False, help="scan files in subdirectories [optional]", required=False) #Argument for toggle querying subdirectories.
-parser.add_argument("-wi","--writeindex", action="store", dest="index_path", help="index items queried and store in a text file at given path [optional]", required=False) #Argument for indexing queried results.
-parser.add_argument("-ri","--readindex", action="store_true", dest="ri", default=False, help="use index file to run query [optional]", required=False) #Argument for querying from indexed results.
-parser.add_argument("-c","--count", action="store", dest="c", help="open C files with query [optional]", required=False) #Argument for how many files to open.
-parser.add_argument("-d","--delay", action="store", dest="d", help="delay D seconds between file opens [optional]", required=False) #Argument for delay between opening files.
-parser.add_argument("-ft","--filetypes", dest="filetypes", nargs="+", type=str, help="filetypes to limit query to [optional]", required=False) #Argument for query filetypes.
-args = parser.parse_args() #Get arguments from command line.
+####################
+# Global Variables #
+####################
+PATH = '' # Path to our folder
+SUB = True # Whether or not we're parsing subdirectories.
+INDEX = [] # Indexed files
+HISTORY = [] # Opened file history.
+FUTURE = [] # History of opened files we've gone back from.
+FILE_TYPES = [] # Whitelisted filetypes.
+USE_FILE_TYPE = False # Whether or not to use custom file types.
 
-###################################
-#Initialize Argument Vars and Check
-###################################
-#Ensure read and write index not enabled at same time.
-if args.ri and args.index_path:
-    print("You can't read and write indexes in the same query.")
-    exit()
-#Ensure count is a positive integer.
-count = 1
-if args.c:
-    if int(args.c) <= 0:
-        print("Count must be a positive integer.")
-        exit()
-    count = int(args.c)
-#Ensure delay is a positive integer or 0.
-delay = 0
-if args.d:
-    if int(args.d) < 0:
-        print("Delay must be a positive integer or 0.")
-        exit()
-    delay = int(args.d)
-#Override default filetypes if necessary.
-fileTypes = ["jpg", "jpeg", "png", "gif", "webm", "mp3", "mp4", "mov", "mkv", "txt"]
-if args.filetypes:
-    fileTypes = args.filetypes
+#############
+# Build GUI #
+#############
+gui.theme('Black')
+# Path selection row.
+pathRow = [
+    gui.Text('Folder Path:'),
+    gui.In(size=(50,1), enable_events=True, key='path_sel'), 
+    gui.FolderBrowse(),
+    gui.Checkbox('Include Subdirectories', default=True, key='read_sub')
+]
+# Filetypes row.
+fileTypeRow = [
+    [gui.Text('Filetypes (comma seperated):', pad=(0, 20)),
+    gui.InputText(pad=(10, 20), key='filetypes'), 
+    gui.Checkbox('Custom Filetypes', default=False, pad=(0, 20), key='filter_filetypes')]
+]
+# Control button row.
+ctrlBttnRow = [
+    gui.Button('Previous', font=('Arial Bold', 20), size=(8, 1), key='prev'),
+    gui.Button('Random', font=('Arial Bold', 20), size=(8, 1), pad=(20, 0),  key='rand'),
+    gui.Button('Next', font=('Arial Bold', 20), size=(8, 1), key='next')
+]
+# File history row.
+histRow = [
+    [gui.Text('History:')],
+    gui.Text('TEST TEXT...', key='history_text')
+]
+# Assemble layout.
+layout = [
+    pathRow,
+    fileTypeRow,
+    ctrlBttnRow,
+    [gui.Button('debug', key='debug')]
+]
+# Create the window.
+window = gui.Window('EZ Media Queue', layout)
+
+####################
+# Helper Functions #
+####################
+# Function for indexing a path.
+def indexPath(path):
+    global PATH
+    if path == PATH:
+        return
+    PATH = path
+    handleFiles()
+    print('Index updated.')
+
+# Function for handling a button event.
+def processButton(event):
+    if event == 'rand':
+        file = randomItem()
+    elif event == 'prev':
+        file = prevItem()
+    elif event == 'next':
+        file = nextItem()
+    else:
+        return
+    if file:
+        os.startfile(file)
+
+# Function for getting the previous item in the history.
+def prevItem():
+    global HISTORY
+    global FUTURE
+    if len(HISTORY) < 2:
+        return
+    FUTURE.insert(0, HISTORY.pop(-1))
+    return HISTORY[-1]
+
+# Function for getting the next item in the queue.
+def randomItem():
+    global INDEX
+    global HISTORY
+    file = np.random.choice(INDEX)
+    HISTORY.append(file)
+    return file
+
+# Function for getting a random item in the queue.
+def nextItem():
+    global HISTORY
+    global FUTURE
+    # TODO: add functionality for getting a logical next item instead of this condition
+    if len(FUTURE) == 0:
+        return
+    HISTORY.append(FUTURE.pop(0))
+    return HISTORY[-1]
 
 ########################
 #File Fetching Functions
 ########################
 #Fetch all files in directory.
 def fetchFiles(items, path):
-    files = [f for f in items if os.path.isfile(f"{path}/{f}") and f.split(".")[len(f.split("."))-1] in fileTypes] #Filter only files in pathed directory.
+    global FILE_TYPES
+    global USE_FILE_TYPE
+    if USE_FILE_TYPE:
+        fileTypes = FILE_TYPES
+    else:
+        fileTypes = ['mp3', 'mp4', 'mov', 'mkv', 'png', 'jpg', 'jpeg', 'gif', 'webm', 'txt', 'pdf']
+    files = [f for f in items if os.path.isfile(f'{path}/{f}') and f.split('.')[len(f.split('.'))-1] in fileTypes] #Filter only files in pathed directory.
     files = [f'{path}/{f}' for f in files] #Add path to found filenames.
     return files
+
 #Recusively fetch all files in a directory and its subdirectories.
 def fetchAllFiles(path):
     items = os.listdir(path)
     files = fetchFiles(items, path)
-    directories = [d for d in items if os.path.isdir(f"{path}/{d}")]
+    directories = [d for d in items if os.path.isdir(f'{path}/{d}')]
     for d in directories:
-        p = f"{path}/{d}"
+        p = f'{path}/{d}'
         files.extend(fetchAllFiles(p))
     return files
+
 #Function for handling whether or not to fetch files in subdirectories or just the files in the provided directory.
-def handleFiles(path):
-    if args.s:
-        files = fetchAllFiles(path)
+def handleFiles():
+    global PATH
+    global INDEX
+    if SUB:
+        files = fetchAllFiles(PATH)
     else:
-        files = fetchFiles(os.listdir(path), path)
+        files = fetchFiles(os.listdir(PATH), PATH)
     #If no files found, error.
     if len(files) == 0:
-        print(f"No files found at {PATH}.")
+        print(f'No files found at {PATH}.')
         exit()
-    return files
-#############
-#Main Program
-#############
-#Function for opening files.
-def openFiles(files):
-    for x in range(count):
-        fileName = np.random.choice(files)
-        print(fileName)
-        startfile(fileName)
-        time.sleep(delay)
-    exit()
-#Handle if writing to index.
-if args.index_path:
-    files = handleFiles(args.path)
-    file = open(args.index_path, "wb+")
-    file.write("\n".join(files).encode("utf8"))
-    file.close()
-    exit()
-#Handle if reading from index.
-elif args.ri:
-    file = open(args.path, "rb")
-    files = file.read().decode("utf8")
-    files = files.split("\n")
-    files = [f for f in files if f.split(".")[len(f.split(".")) - 1] in fileTypes]
-    file.close()
-    openFiles(files)
-#Handle if just opening a file normally.
-else:
-    files = handleFiles(args.path)
-    openFiles(files)
+    INDEX = files
 
+##############
+# Event Loop #
+##############
+while True:
+    event, values = window.read()
+    if event in (gui.WIN_CLOSED, 'Cancel'):
+        break
+    elif event == 'debug':
+        print(f'Path:{PATH}\nSub:{SUB}\nIndex Size:{len(INDEX)}\nHistory:{HISTORY}\nFuture:{FUTURE}\nFile Types:{FILE_TYPES}\nUse Filetypes:{USE_FILE_TYPE}\n')
+    elif event == 'path_sel':
+        indexPath(values['path_sel'])
+    else:
+        processButton(event)
+    #window['history_text'].update(str(values))
+window.close()
+
+# TODO:
+# Tracker for previous 10 items displayed]
+# Current item displayed
+# Next item displayed
+# Add event and function for updating filetypes
+# Fix subdirectories
+# Implement Next button
