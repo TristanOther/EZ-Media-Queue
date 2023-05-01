@@ -8,12 +8,12 @@ The above image highlights the important UI sections of this application. Below 
 ### Path Selector (Highlighted Red):
 Here we see 2 input sections, a textbox and a checkbox. The textbox is where the path to the folder you wish to browse should be entered. You can enter the path in manually, or hit the browse button to navigate to the path using the Windows file selector. Only media at this path will be viewed by the program. 
 
-Next to the path selector is a checkbox labled "Include Subdirectories". This box is checked by default. When checked, the program will including media in all folders within the folder you specify with the path selector. If you choose to unselect this, any media stored in folders will not be played.
+Next to the path selector is a checkbox labled "Include Subdirectories". This box is checked by default. When checked, the program will include media in all folders within the folder you specify with the path selector. If you choose to unselect this, any media stored in subfolders will not be played.
 
 ### Filetype Input (Highlighted Yellow):
 Again we see 2 input sections, a textbox and a checkbox. In the textbox you can enter filetypes you want the program to browse, seperated by spaces. In our example image we have png, jpg, gif, and mp4 files specified, but you can specify any filetypes you want. The default if no filetypes are specified is mp3, mp4, mov, mkv, png, jpg, jpeg, gif, webm, txt, and pdf.
 
-Next to the filetypes input box there is a checkbox labeled "Custom Filetypes". When left unchecked any filetypes in the input box will be be used. In order to filter by filetypes you must check this box.
+Next to the filetypes input box there is a checkbox labeled "Custom Filetypes". When left unchecked, any filetypes in the input box will be used. In order to filter by filetypes you must check this box.
 
 ### Navigation Buttons (Highlighted Green):
 Here we see 2 buttons. The first button, labled "Previous", behaves as you might expect. When browsing media if you skip past a file you want to go back to you can hit the "Previous" button to go back through the entire history of opened files. 
