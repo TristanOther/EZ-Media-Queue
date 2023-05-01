@@ -32,7 +32,7 @@ pathRow = [
 ]
 # Filetypes row.
 fileTypeRow = [
-    [gui.Text('Filetypes seperated by spaces:', pad=(0, 20)),
+    [gui.Text('Filetypes (seperated by spaces):', pad=(0, 20)),
     gui.InputText(pad=(10, 20), enable_events=True, key='filetypes'),
     gui.Checkbox('Custom Filetypes', default=False, pad=(0, 20), enable_events=True, key='filter_filetypes')]
 ]
@@ -75,6 +75,7 @@ def handleEvents(event, values):
         print(f'Path:{PATH}\nSub:{SUB}\nIndex Size:{len(INDEX)}\nHistory:{HISTORY}\nFile Index:{CUR_FILE}\nFile Types:{FILE_TYPES}\nUse Filetypes:{USE_FILE_TYPES}\n')
     elif event == 'path_sel':
         indexPath(values['path_sel'])
+        SPECS_CHANGED = True
     elif event == 'read_sub':
         SUB = values['read_sub']
         SPECS_CHANGED = True
