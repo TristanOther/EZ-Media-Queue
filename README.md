@@ -2,6 +2,9 @@
 Do you have a large library of photos, videos, music, or other media, but never know what to watch? EZ Media Queue is the solution to this incredibly random problem! With this program you can view any and all media on your computer with the press of a button. This program opens the specified media using whatever program you have set as default in Windows, so your favorite settings and features are all availible for any media you wish to browse. To begin, follow the usage instructions below!
 
 ## How to use:
+### Installation:
+To use this project, simply download the ml.py file from this repository and run it using Python. This project currently requires Python 3 and the PySimpleGUI library are installed to use. When run, the program will open its GUI, and is ready to use.
+
 ![Image highlighting GUI elements so they can be explained below.](https://github.com/TristanOther/EZ-Media-Queue/blob/main/Misc/Images/example.png)
 The above image highlights the important UI sections of this application. Below I'll explain each section and what it does.
 

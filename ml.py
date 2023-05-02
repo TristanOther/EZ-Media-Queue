@@ -4,7 +4,6 @@
 import PySimpleGUI as gui
 import os
 import numpy as np
-import time
 
 ####################
 # Global Variables #
