@@ -3,7 +3,7 @@ Do you have a large library of photos, videos, music, or other media, but never 
 
 ## How to use:
 ### Installation:
-To use this project, simply download the ml.py file from this repository and run it using Python. This project currently requires Python 3 and the PySimpleGUI library are installed to use. When run, the program will open its GUI, and is ready to use.
+To use this project, simply download the ml.py file from this repository and run it using Python. This project currently requires that Python3 and the PySimpleGUI library are installed to use. When run, the program will open its GUI and is ready to use.
 
 ![Image highlighting GUI elements so they can be explained below.](https://github.com/TristanOther/EZ-Media-Queue/blob/main/Misc/Images/example.png)
 The above image highlights the important UI sections of this application. Below I'll explain each section and what it does.
